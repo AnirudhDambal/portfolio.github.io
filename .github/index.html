@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anirudh Dambal | Portfolio</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      line-height: 1.6;
+      scroll-behavior: smooth; /* Smooth scrolling */
+    }
+
+    header {
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: white;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: fadeIn 1s ease-in;
+    }
+
+    nav {
+      margin-top: 10px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      color: #e0e0e0;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #ffffff;
+      transform: scale(1.1); /* Slight zoom effect */
+    }
+
+    section {
+      padding: 3rem 1.5rem;
+      max-width: 1000px;
+      margin: auto;
+      opacity: 0;
+      animation: fadeInUp 1s forwards;
+    }
+
+    h2 {
+      color: #2a5298;
+      margin-bottom: 1rem;
+      animation: slideInLeft 1s ease-out;
+    }
+
+    .strategy, .dream-company {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      opacity: 0;
+      animation: fadeInUp 1.5s forwards;
+    }
+
+    .strategy:hover, .dream-company:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+
+    ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .social-links {
+      margin-top: 1.5rem;
+      opacity: 0;
+      animation: fadeInUp 2s forwards;
+    }
+
+    .social-links a {
+      display: inline-block;
+      margin-right: 20px;
+      text-decoration: none;
+      color: #2a5298;
+      font-weight: 600;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .social-links a:hover {
+      color: #1e3c72;
+      transform: scale(1.1); /* Slight zoom effect */
+    }
+
+    footer {
+      background-color: #1e3c72;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      animation: fadeIn 1s ease-in;
+    }
+
+    @media (max-width: 600px) {
+      nav a {
+        display: block;
+        margin: 10px 0;
+      }
+
+      .social-links a {
+        display: block;
+        margin-bottom: 10px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Anirudh Dambal | Portfolio</h1>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#portfolio">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#dream-company">Dream Company</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <section id="about">
+    <h2>About Me</h2>
+    <p>Hi! I'm Anirudh Dambal, a student at KLE Tech. I am passionate about blending computer science and marketing to create high-impact, data-driven solutions. My dream is to work at a company that values innovation and AI-driven decision-making.</p>
+  </section>
+
+  <section id="portfolio">
+    <h2>My Projects</h2>
+
+    <div class="strategy">
+      <h3>Traffic Sign Detection Model</h3>
+      <ul>
+        <li>Developed a deep learning model for traffic sign detection using YOLO and CNN.</li>
+        <li>Trained the model on a dataset of road signs for high accuracy in real-time detection.</li>
+        <li>Optimized the model for deployment in traffic monitoring systems.</li>
+      </ul>
+    </div>
+
+    <div class="strategy">
+      <h3>QuickEats – Food Delivery Website</h3>
+      <ul>
+        <li>Built a full-stack web app using the MERN stack (MongoDB, Express.js, React, Node.js).</li>
+        <li>Implemented user authentication, order tracking, and responsive UI for food ordering.</li>
+        <li>Integrated secure payment gateway and real-time updates via WebSockets.</li>
+      </ul>
+    </div>
+
+    <div class="strategy">
+      <h3>3-Addressing Indirect Mode Processor (Logisim Simulation)</h3>
+      <ul>
+        <li>Simulated a 16-bit processor with a three-address indirect addressing mode using Logisim.</li>
+        <li>Implemented arithmetic and logical operations to demonstrate processor design.</li>
+        <li>Gained experience in digital logic and CPU architecture.</li>
+      </ul>
+    </div>
+
+    <div class="strategy">
+      <h3>NVIDIA Project – Virtual Hardware Simulation & Code Analysis</h3>
+      <ul>
+        <li>Developed a virtual environment to simulate hardware behavior and analyze execution.</li>
+        <li>Implemented performance metrics, optimization insights, and statistical analysis tools.</li>
+        <li>Contributed to code efficiency and resource utilization improvements.</li>
+      </ul>
+    </div>
+
+    <div class="strategy">
+      <h3>NVIDIA Research Project – LLM Behavior Analysis (Ongoing)</h3>
+      <ul>
+        <li>Researching behavior of Large Language Models (LLMs) in various interaction scenarios.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <ul>
+      <li><strong>Languages:</strong> Python, JavaScript, C, C++</li>
+      <li><strong>Web Development:</strong> HTML, CSS, React, Node.js, Express.js, MongoDB</li>
+      <li><strong>Frameworks & Tools:</strong> MERN Stack, YOLO, TensorFlow, Logisim, Git</li>
+      <li><strong>Concepts:</strong> Deep Learning, CPU Architecture, Simulation, AI Research</li>
+    </ul>
+  </section>
+
+  <section id="contact">
+    <h2>Contact Me</h2>
+    <p> Hardly online in </p>
+    <div class="social-links">
+      <a href="https://github.com/yourgithub" target="_blank">GitHub</a>
+      <a href="https://linkedin.com/in/yourlinkedin" target="_blank">LinkedIn</a>
+    </div>
+  </section>
+
+  <section id="nvidia">
+    <h2>NVIDIA</h2>
+  
+    <div class="strategy">
+      <h3>Course Details</h3>
+      <ul>
+        <li><strong>Course Name:</strong>Algorithmic Problem Solving</li>
+        <li><strong>Course Code:</strong>------</li>
+        <li><strong>Name:</strong> Anirudh Dambal</li>
+        <li><strong>SRN:</strong> 01FE22BCS171</li>
+        <li><strong>Course Instructor:</strong>Prakash Hegde</li>
+        <li><strong>University:</strong> KLE Technological University</li>
+      </ul>
+    </div>
+
+    <section id="dream-company">
+        <h2>Dream Company Spotlight: NVIDIA</h2>
+    
+        <div class="dream-company">
+          <h3>1. Real-Time Neural Compression for Cloud Gaming</h3>
+          <p>NVIDIA can pioneer a real-time neural compression algorithm tailored for ultra-low latency game streaming on its GeForce NOW platform. By combining deep learning and edge-optimized compression codecs, they can reduce data transmission by 60–70% without compromising visual fidelity.</p>
+          <p>The algorithm would dynamically learn user device capabilities and network behavior to optimize the stream in real time—improving UX while reducing bandwidth costs significantly.</p>
+          <p>Implementation Strategy:</p>
+          <ul>
+            <li>Partner with telecom companies to optimize edge delivery.</li>
+            <li>Train compression models on synthetic gameplay datasets using NVIDIA DGX platforms.</li>
+            <li>Integrate with RTX GPU tensor cores for local adaptation.</li>
+          </ul>
+          <p><strong>Revenue Forecast:</strong> Additional $1.2B/year from GeForce NOW via subscriptions and cost reductions.</p>
+        </div>
+    
+        <div class="dream-company">
+          <h3>2. Generative AI for 3D Asset Creation</h3>
+          <p>NVIDIA can launch a platform that generates 3D assets, characters, and environments using diffusion models. Integrated with Omniverse and RTX rendering, this tool reduces development time by 40% and empowers creators.</p>
+          <p>Implementation Strategy:</p>
+          <ul>
+            <li>Partner with Unity and Unreal Engine for ecosystem support.</li>
+            <li>Train models on large-scale 3D simulation data.</li>
+            <li>Enable real-time RTX previews for creators.</li>
+          </ul>
+          <p><strong>Revenue Forecast:</strong> $800M/year from Omniverse Studio subscriptions and asset licensing.</p>
+        </div>
+    
+        <div class="dream-company">
+          <h3>3. AI Cybersecurity for Autonomous Vehicles</h3>
+          <p>NVIDIA can embed AI-powered anomaly detection and federated learning models within its DRIVE platform to secure autonomous vehicles in real time without cloud dependency.</p>
+          <p>Implementation Strategy:</p>
+          <ul>
+            <li>Integrate models into DRIVE OS with automotive partners.</li>
+            <li>Use federated RL for distributed learning.</li>
+            <li>Meet safety certifications with national standards.</li>
+          </ul>
+          <p><strong>Revenue Forecast:</strong> $600M/year through AV cybersecurity licensing ($300/car).</p>
+        </div>
+    
+        <div class="dream-company">
+          <h3>4. Quantum-Inspired Optimization for Supply Chains</h3>
+          <p>NVIDIA can commercialize GPU-powered solvers using quantum-inspired algorithms to optimize delivery routes, inventory, and warehouse workflows for global enterprises.</p>
+          <p>Implementation Strategy:</p>
+          <ul>
+            <li>Develop CUDA and cuQuantum SDK for logistics use cases.</li>
+            <li>Partner with FedEx, Amazon for pilot deployments.</li>
+            <li>Deploy via NVIDIA AI Enterprise on cloud.</li>
+          </ul>
+          <p><strong>Revenue Forecast:</strong> $1B/year in SaaS-based optimization for large enterprise clients.</p>
+        </div>
+    
+        <div class="dream-company">
+          <h3>5. Edge AI for Smart Factories</h3>
+          <p>NVIDIA can dominate the Industry 4.0 market with Jetson-based AI edge devices for robotics, predictive maintenance, and defect detection in manufacturing environments.</p>
+          <p>Implementation Strategy:</p>
+          <ul>
+            <li>Distribute pre-trained Jetson AI kits for factory automation.</li>
+            <li>Integrate with Isaac Sim for simulated training and testing.</li>
+            <li>Form alliances with Bosch, Siemens, and ABB.</li>
+          </ul>
+          <p><strong>Revenue Forecast:</strong> $750M/year from industrial hardware + AI services bundles.</p>
+        </div>
+      </section>
+    </section>
+
+
+  <footer>
+    <p>&copy; 2025 Anirudh Dambal</p>
+  </footer>
+</body>
+</html>
