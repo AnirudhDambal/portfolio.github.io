@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA GeForce NOW: Cache Optimization</title>
+    <link rel="stylesheet" href="../styles/case-studies.css">
+</head>
+<body>
+    <div class="case-study-container">
+        <h1>NVIDIA GeForce NOW: Cache Optimization</h1>
+        
+        <section class="challenge-section">
+            <h2>Problem Statement</h2>
+            <div class="challenge-card">
+                <p>NVIDIA GeForce NOW streams games from cloud servers, requiring efficient game asset caching (e.g., textures, models) to minimize latency and bandwidth. The challenge is optimizing cache eviction with LRU (Least Recently Used) and LFU (Least Frequently Used) to achieve high hit ratios given dynamic access patterns and limited cache size.</p>
+            </div>
+        </section>
+
+        <section class="solution-section">
+            <h2>Why LRU and LFU</h2>
+            <div class="solution-card">
+                <ul>
+                    <li><strong>LRU (Least Recently Used):</strong>
+                        <ul>
+                            <li>Evicts least recently used assets</li>
+                            <li>Leverages temporal locality (e.g., active game scenes)</li>
+                            <li>Ideal for short-term access patterns</li>
+                        </ul>
+                    </li>
+                    <li><strong>LFU (Least Frequently Used):</strong>
+                        <ul>
+                            <li>Evicts least frequently used assets</li>
+                            <li>Prioritizes long-term popular assets (e.g., UI elements)</li>
+                            <li>Suits stable, frequent access</li>
+                        </ul>
+                    </li>
+                    <li><strong>GeForce NOW Implementation:</strong>
+                        <ul>
+                            <li>LRU handles dynamic scenes</li>
+                            <li>LFU retains shared assets</li>
+                            <li>Both reduce server-to-client data transfer (10–20 Mbps)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="implementation-section">
+            <h2>Implementation</h2>
+            <div class="implementation-card">
+                <h3>How LRU and LFU Work</h3>
+                <ul>
+                    <li><strong>LRU Implementation:</strong>
+                        <ul>
+                            <li>Uses a doubly linked list and hash map to track recency</li>
+                            <li>Moves accessed assets to the head</li>
+                            <li>Evicts from the tail on overflow</li>
+                        </ul>
+                    </li>
+                    <li><strong>LFU Implementation:</strong>
+                        <ul>
+                            <li>Tracks frequency with counters</li>
+                            <li>Increments on access</li>
+                            <li>Evicts lowest-frequency asset on overflow</li>
+                        </ul>
+                    </li>
+                    <li><strong>GPU Role:</strong>
+                        <ul>
+                            <li>NVIDIA GPUs (e.g., Turing) use CUDA threads for parallel cache operations</li>
+                            <li>Edge servers cache assets to cut latency</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>LRU Cache Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct CacheEntry { 
+    int key; 
+    void* asset; 
+};
+
+struct Node { 
+    int key; 
+    Node* prev; 
+    Node* next; 
+};
+
+__global__ void lruCacheAccess(
+    CacheEntry* cache, 
+    Node* list, 
+    int* head, 
+    int* tail, 
+    int key, 
+    void* asset, 
+    int capacity, 
+    int* size
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx != 0) return;
+
+    int cacheIdx = /* Hash(key) % capacity */;
+    
+    if (cache[cacheIdx].key == key) {
+        // Cache hit: Move to front
+        Node* node = /* Find node */;
+        if (node != head[0]) {
+            node->prev->next = node->next;
+            if (node == tail[0]) 
+                tail[0] = node->prev;
+            else 
+                node->next->prev = node->prev;
+            
+            node->next = head[0];
+            node->prev = nullptr;
+            head[0]->prev = node;
+            head[0] = node;
+        }
+    } else {
+        // Cache miss: Add new entry
+        if (size[0] >= capacity) {
+            // Evict least recently used
+            cache[tail[0]->key % capacity].key = -1;
+            Node* newTail = tail[0]->prev;
+            newTail->next = nullptr;
+            tail[0] = newTail;
+            size[0]--;
+        }
+        
+        // Add new entry
+        cache[cacheIdx].key = key;
+        cache[cacheIdx].asset = asset;
+        
+        Node* newNode = /* Allocate */;
+        newNode->key = key;
+        newNode->next = head[0];
+        newNode->prev = nullptr;
+        
+        if (head[0]) 
+            head[0]->prev = newNode;
+        head[0] = newNode;
+        
+        if (!tail[0]) 
+            tail[0] = newNode;
+        
+        size[0]++;
+    }
+}</pre>
+                </div>
+
+                <h3>LFU Cache Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct CacheEntry { 
+    int key; 
+    void* asset; 
+    int freq; 
+};
+
+struct FreqNode { 
+    int freq; 
+    int* keys; 
+    int count; 
+};
+
+__global__ void lfuCacheAccess(
+    CacheEntry* cache, 
+    FreqNode* freqList, 
+    int* minFreq, 
+    int key, 
+    void* asset, 
+    int capacity, 
+    int* size
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx != 0) return;
+
+    int cacheIdx = /* Hash(key) % capacity */;
+    
+    if (cache[cacheIdx].key == key) {
+        // Cache hit: Update frequency
+        int oldFreq = cache[cacheIdx].freq;
+        cache[cacheIdx].freq++;
+        
+        /* Update freqList */
+        if (freqList[oldFreq].count == 0 && oldFreq == minFreq[0]) 
+            minFreq[0]++;
+    } else {
+        // Cache miss: Add new entry
+        if (size[0] >= capacity) {
+            // Evict least frequently used
+            int evictKey = freqList[minFreq[0]].keys[0];
+            cache[evictKey % capacity].key = -1;
+            
+            /* Remove evictKey from freqList[minFreq] */
+            if (freqList[minFreq[0]].count == 0) 
+                minFreq[0]++;
+            
+            size[0]--;
+        }
+        
+        // Add new entry
+        cache[cacheIdx].key = key;
+        cache[cacheIdx].asset = asset;
+        cache[cacheIdx].freq = 1;
+        
+        /* Add key to freqList[1] */
+        minFreq[0] = 1;
+        size[0]++;
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="analysis-section">
+            <h2>Performance Analysis</h2>
+            <div class="analysis-card">
+                <h3>Time and Space Complexity</h3>
+                <ul>
+                    <li><strong>LRU Cache:</strong>
+                        <ul>
+                            <li>Time Complexity: O(1) for both access and eviction</li>
+                            <li>Space Complexity: O(n) for list and map storage</li>
+                            <li>Ideal for dynamic game assets with temporal locality</li>
+                        </ul>
+                    </li>
+                    <li><strong>LFU Cache:</strong>
+                        <ul>
+                            <li>Time Complexity: O(log n) for access and eviction (heap-based)</li>
+                            <li>Space Complexity: O(n) for counters and heap</li>
+                            <li>Better for frequently accessed assets like UI elements</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="applications-section">
+            <h2>Key Applications</h2>
+            <div class="applications-grid">
+                <div class="application-card">
+                    <h3>Game Asset Caching</h3>
+                    <ul>
+                        <li>Texture Streaming</li>
+                        <li>Model Loading</li>
+                        <li>Level Data</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Edge Computing</h3>
+                    <ul>
+                        <li>Local Asset Storage</li>
+                        <li>Reduced Latency</li>
+                        <li>Bandwidth Optimization</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Cloud Gaming</h3>
+                    <ul>
+                        <li>Stream Optimization</li>
+                        <li>Resource Management</li>
+                        <li>Quality of Service</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html> 

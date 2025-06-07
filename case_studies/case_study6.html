@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA GeForce NOW: Data Compression - Case Study</title>
+    <link rel="stylesheet" href="../styles/case-studies.css">
+</head>
+<body>
+    <div class="container">
+        <h1>NVIDIA GeForce NOW: Data Compression</h1>
+        
+        <section class="challenge">
+            <h2>Problem Statement</h2>
+            <p>NVIDIA GeForce NOW streams games from cloud servers, requiring efficient data compression to minimize bandwidth and latency for real-time gaming. Huffman Coding is a key algorithm for lossless compression of game assets (e.g., textures, audio). The challenge is optimizing compression for high throughput on NVIDIA GPUs (e.g., RTX, A100) while maintaining low latency.</p>
+        </section>
+
+        <section class="solution">
+            <h2>Why Huffman Coding</h2>
+            <ul>
+                <li><strong>Huffman Coding:</strong> Assigns variable-length prefix codes to symbols based on frequency, using shorter codes for frequent symbols to reduce data size. Ideal for game assets with skewed frequency distributions (e.g., repeated textures).</li>
+                <li><strong>GeForce NOW Context:</strong> Compression reduces bandwidth (10–20 Mbps) for streaming, critical for 4K/60fps gaming. GPU-accelerated encoding/decoding ensures real-time performance.</li>
+            </ul>
+
+            <h3>Other Algorithms/Data Structures</h3>
+            <ul>
+                <li><strong>DEFLATE:</strong> Combines Huffman Coding with LZ77 for better compression ratios, used in formats like ZIP/PNG.</li>
+                <li><strong>LZ77/LZSS:</strong> Dictionary-based compression for redundant data (e.g., game textures), often paired with Huffman in DEFLATE.</li>
+                <li><strong>Priority Queue:</strong> Builds Huffman Tree by sorting symbols by frequency.</li>
+                <li><strong>Huffman Tree:</strong> Binary tree for generating prefix codes, ensuring unambiguous decoding.</li>
+                <li><strong>Hash Maps:</strong> Store symbol-to-code mappings for fast encoding/decoding.</li>
+            </ul>
+        </section>
+
+        <section class="implementation">
+            <h2>How They Work</h2>
+            <div class="implementation-details">
+                <h3>Huffman Coding</h3>
+                <ul>
+                    <li><strong>Frequency Analysis:</strong> Count symbol frequencies (e.g., pixel intensities, audio samples).</li>
+                    <li><strong>Tree Construction:</strong> Use a priority queue to build a Huffman Tree, merging lowest-frequency nodes (O(n log n)).</li>
+                    <li><strong>Encoding:</strong> Assign codes (0 for left, 1 for right) via tree traversal, storing mappings in a hash map.</li>
+                    <li><strong>Decoding:</strong> Traverse the tree using the encoded bitstream to reconstruct data.</li>
+                </ul>
+
+                <h3>DEFLATE</h3>
+                <ul>
+                    <li>LZ77 finds repeated patterns, then Huffman Coding compresses the output, balancing speed and ratio.</li>
+                    <li>LZ77/LZSS: Slide a window to find matches, replacing repeats with pointers, ideal for redundant game data.</li>
+                </ul>
+
+                <h3>GPU Role</h3>
+                <p>CUDA parallelizes frequency counting, tree construction, and encoding/decoding, leveraging high memory bandwidth on RTX/A100 GPUs.</p>
+            </div>
+
+            <div class="code-example">
+                <h3>Huffman Coding (CUDA Pseudo-Code)</h3>
+                <pre><code class="language-cuda">#include &lt;cuda_runtime.h&gt;
+
+struct HuffmanNode {
+    int symbol;
+    int freq;
+    int left;
+    int right;
+};
+
+struct HashMap {
+    int* symbols;
+    char* codes;
+    int size;
+};
+
+__global__ void countFrequencies(int* data, int n, int* freq) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) atomicAdd(&freq[data[idx]], 1);
+}
+
+__global__ void buildHuffmanTree(HuffmanNode* nodes, int* freq, int n, int* root) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n) return;
+    
+    // Initialize leaf nodes
+    if (idx < n) {
+        nodes[idx].symbol = idx;
+        nodes[idx].freq = freq[idx];
+        nodes[idx].left = -1;
+        nodes[idx].right = -1;
+    }
+    __syncthreads();
+    
+    // Parallel merge of lowest-frequency nodes
+    for (int i = n; i < 2*n-1; i++) {
+        if (idx == 0) {
+            int min1 = /* Find min freq */;
+            int min2 = /* Find second min freq */;
+            nodes[i].freq = nodes[min1].freq + nodes[min2].freq;
+            nodes[i].left = min1;
+            nodes[i].right = min2;
+            nodes[i].symbol = -1;
+            root[0] = i;
+        }
+        __syncthreads();
+    }
+}
+
+__global__ void encodeData(int* data, int n, HashMap* map, char* output) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) {
+        int sym = data[idx];
+        int mapIdx = /* Hash(sym) */;
+        // Append map->codes[mapIdx] to output
+    }
+}</code></pre>
+
+                <h3>DEFLATE with LZ77 (CUDA Pseudo-Code)</h3>
+                <pre><code class="language-cuda">#include &lt;cuda_runtime.h&gt;
+
+__global__ void lz77Compress(char* input, int n, int* matches, int windowSize) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n) return;
+    
+    // Slide window, find longest match
+    int matchLen = 0, matchPos = 0;
+    for (int i = max(0, idx - windowSize); i < idx; i++) {
+        int len = /* Check match length */;
+        if (len > matchLen) {
+            matchLen = len;
+            matchPos = i;
+        }
+    }
+    matches[idx] = /* Store (matchPos, matchLen) */;
+}
+
+__global__ void applyHuffman(char* lz77Output, int n, HashMap* huffmanMap, char* finalOutput) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) {
+        // Encode lz77Output[idx] using huffmanMap
+    }
+}</code></pre>
+            </div>
+        </section>
+
+        <section class="analysis">
+            <h2>Performance Analysis</h2>
+            <div class="complexity-analysis">
+                <h3>Time Complexity</h3>
+                <ul>
+                    <li>Huffman Coding: O(n log n) for tree construction, O(1) for encoding/decoding</li>
+                    <li>DEFLATE: O(n) for LZ77, O(n log n) for Huffman</li>
+                    <li>Priority Queue: O(log n) for insert/extract</li>
+                    <li>Hash Map: O(1) for lookup</li>
+                </ul>
+
+                <h3>Space Complexity</h3>
+                <ul>
+                    <li>Huffman Tree: O(n)</li>
+                    <li>DEFLATE: O(n) for window and tree</li>
+                    <li>Hash Map: O(n) for symbol-to-code mappings</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="applications">
+            <h2>Key Applications</h2>
+            <ul>
+                <li><strong>Game Asset Streaming:</strong> Efficient compression of textures, audio, and other game assets for real-time streaming.</li>
+                <li><strong>4K Gaming:</strong> Enables high-quality game streaming at 4K/60fps with reduced bandwidth requirements.</li>
+                <li><strong>Cloud Gaming:</strong> Optimizes data transfer between cloud servers and client devices.</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html> 

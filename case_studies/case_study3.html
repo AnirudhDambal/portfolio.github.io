@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA DRIVE: Path Planning</title>
+    <link rel="stylesheet" href="../styles/case-studies.css">
+</head>
+<body>
+    <div class="case-study-container">
+        <h1>NVIDIA DRIVE: Path Planning</h1>
+        
+        <section class="challenge-section">
+            <h2>Problem Statement</h2>
+            <div class="challenge-card">
+                <p>NVIDIA DRIVE enables autonomous vehicle navigation via AI and path planning. Motion planning requires finding optimal, collision-free paths in dynamic environments, modeled as graphs. The challenge is computing shortest paths efficiently for real-time safety and smoothness, while handling dynamic obstacles and maintaining vehicle stability on DRIVE AGX hardware.</p>
+            </div>
+        </section>
+
+        <section class="solution-section">
+            <h2>Why Dijkstra and A*</h2>
+            <div class="solution-card">
+                <ul>
+                    <li><strong>Dijkstra's Algorithm:</strong>
+                        <ul>
+                            <li>Finds shortest paths in weighted graphs (e.g., road networks)</li>
+                            <li>Ensures accuracy for static routes</li>
+                            <li>Guarantees optimal paths</li>
+                        </ul>
+                    </li>
+                    <li><strong>A* Algorithm:</strong>
+                        <ul>
+                            <li>Uses heuristics (e.g., Euclidean distance) for faster planning</li>
+                            <li>Ideal for dynamic environments and obstacle avoidance</li>
+                            <li>Reduces exploration space for real-time performance</li>
+                        </ul>
+                    </li>
+                    <li><strong>NVIDIA DRIVE Implementation:</strong>
+                        <ul>
+                            <li>Leverages DRIVE AGX (Orin/Thor) for parallel processing</li>
+                            <li>Dijkstra for global routes</li>
+                            <li>A* for real-time trajectories</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="implementation-section">
+            <h2>Implementation</h2>
+            <div class="implementation-card">
+                <h3>How Dijkstra and A* Work</h3>
+                <ul>
+                    <li><strong>Dijkstra's Algorithm:</strong>
+                        <ul>
+                            <li>Explores all nodes by cumulative cost (e.g., distance)</li>
+                            <li>Guarantees optimal paths</li>
+                            <li>Slower for large graphs</li>
+                        </ul>
+                    </li>
+                    <li><strong>A* Algorithm:</strong>
+                        <ul>
+                            <li>Prioritizes nodes using heuristics</li>
+                            <li>Reduces exploration for faster real-time planning</li>
+                            <li>Adapts to dynamic obstacles</li>
+                        </ul>
+                    </li>
+                    <li><strong>GPU Role:</strong>
+                        <ul>
+                            <li>DRIVE AGX uses CUDA for parallel node/edge processing</li>
+                            <li>Integrates with DRIVE OS for low-latency navigation</li>
+                            <li>Supports real-time sensor data integration</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>Dijkstra's Algorithm Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct Node { 
+    int id; 
+    float cost; 
+    int prev; 
+};
+
+__global__ void dijkstra(
+    int* graph, 
+    int n, 
+    int src, 
+    Node* nodes, 
+    bool* visited
+) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid >= n) return;
+
+    if (tid == 0) {
+        // Initialize nodes
+        for (int i = 0; i < n; i++) {
+            nodes[i].cost = FLT_MAX;
+            nodes[i].prev = -1;
+            visited[i] = false;
+        }
+        nodes[src].cost = 0;
+    }
+    __syncthreads();
+
+    for (int i = 0; i < n; i++) {
+        float minCost = FLT_MAX;
+        int u = -1;
+
+        if (tid == 0) {
+            // Find unvisited node with minimum cost
+            for (int j = 0; j < n; j++) {
+                if (!visited[j] && nodes[j].cost < minCost) {
+                    minCost = nodes[j].cost;
+                    u = j;
+                }
+            }
+            if (u >= 0) visited[u] = true;
+        }
+        __syncthreads();
+
+        if (u < 0) return;
+
+        // Update costs for neighbors
+        if (tid < n && !visited[tid]) {
+            float alt = nodes[u].cost + graph[u * n + tid];
+            if (alt < nodes[tid].cost) {
+                nodes[tid].cost = alt;
+                nodes[tid].prev = u;
+            }
+        }
+        __syncthreads();
+    }
+}</pre>
+                </div>
+
+                <h3>A* Algorithm Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct Node { 
+    int id; 
+    float g; 
+    float f; 
+    int prev; 
+};
+
+__device__ float heuristic(int id, int goal, float3* positions) {
+    return /* Euclidean distance */;
+}
+
+__global__ void aStar(
+    int* graph, 
+    int n, 
+    int src, 
+    int goal, 
+    Node* nodes, 
+    bool* open, 
+    bool* closed, 
+    float3* positions
+) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid >= n) return;
+
+    if (tid == 0) {
+        // Initialize nodes
+        for (int i = 0; i < n; i++) {
+            nodes[i].g = FLT_MAX;
+            nodes[i].f = FLT_MAX;
+            nodes[i].prev = -1;
+            open[i] = false;
+            closed[i] = false;
+        }
+        nodes[src].g = 0;
+        nodes[src].f = heuristic(src, goal, positions);
+        open[src] = true;
+    }
+    __syncthreads();
+
+    while (true) {
+        float minF = FLT_MAX;
+        int u = -1;
+
+        if (tid == 0) {
+            // Find node with minimum f-score
+            for (int i = 0; i < n; i++) {
+                if (open[i] && nodes[i].f < minF) {
+                    minF = nodes[i].f;
+                    u = i;
+                }
+            }
+            if (u < 0 || u == goal) break;
+            open[u] = false;
+            closed[u] = true;
+        }
+        __syncthreads();
+
+        if (u < 0 || u == goal) return;
+
+        // Update costs for neighbors
+        if (tid < n && !closed[tid]) {
+            float gNew = nodes[u].g + graph[u * n + tid];
+            if (gNew < nodes[tid].g) {
+                nodes[tid].g = gNew;
+                nodes[tid].f = gNew + heuristic(tid, goal, positions);
+                nodes[tid].prev = u;
+                open[tid] = true;
+            }
+        }
+        __syncthreads();
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="analysis-section">
+            <h2>Performance Analysis</h2>
+            <div class="analysis-card">
+                <h3>Time and Space Complexity</h3>
+                <ul>
+                    <li><strong>Dijkstra's Algorithm:</strong>
+                        <ul>
+                            <li>Time Complexity: O(V + E log V)</li>
+                            <li>Space Complexity: O(V)</li>
+                            <li>Ideal for static route planning</li>
+                        </ul>
+                    </li>
+                    <li><strong>A* Algorithm:</strong>
+                        <ul>
+                            <li>Time Complexity: O(E log V)</li>
+                            <li>Space Complexity: O(V)</li>
+                            <li>Better for dynamic environments</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="applications-section">
+            <h2>Key Applications</h2>
+            <div class="applications-grid">
+                <div class="application-card">
+                    <h3>Global Route Planning</h3>
+                    <ul>
+                        <li>Long-distance Navigation</li>
+                        <li>Road Network Optimization</li>
+                        <li>Multi-lane Planning</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Real-time Navigation</h3>
+                    <ul>
+                        <li>Obstacle Avoidance</li>
+                        <li>Dynamic Path Updates</li>
+                        <li>Emergency Maneuvers</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Autonomous Driving</h3>
+                    <ul>
+                        <li>Sensor Integration</li>
+                        <li>Safety Systems</li>
+                        <li>Traffic Management</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html> 

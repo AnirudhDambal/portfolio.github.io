@@ -1,0 +1,537 @@
+<div class="projects-container">
+    <h2>My Projects</h2>
+    
+
+
+    <div class="projects-grid">
+        <!-- QuickEats Project -->
+        <div class="project-card">
+            <div class="project-image">
+                <img src="projects/images/quick_eats_1.png" alt="QuickEats Project">
+                <div class="project-overlay">
+                    <div class="tech-stack">
+                        <h4>Tech Stack</h4>
+                        <ul>
+                            <li>React.js</li>
+                            <li>Node.js</li>
+                            <li>Express.js</li>
+                            <li>MongoDB</li>
+                            <li>JWT Authentication</li>
+                            <li>tailwind CSS</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>QuickEats</h3>
+                <p>A comprehensive full-stack food ordering platform built with MERN stack. Features include user authentication, menu management, cart functionality, and order tracking.</p>
+                <div class="project-links">
+                    <a href="https://github.com/AnirudhDambal/QuickEats" target="_blank" class="project-link">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADAS-YOLO11 Project -->
+        <div class="project-card">
+            <div class="project-image">
+                <img src="projects/images/traffic_sign_detection.jpeg" alt="ADAS-YOLO11 Project">
+                <div class="project-overlay">
+                    <div class="tech-stack">
+                        <h4>Tech Stack</h4>
+                        <ul>
+                            <li>Python</li>
+                            <li>YOLO v11</li>
+                            <li>OpenCV</li>
+                            <li>TensorFlow</li>
+                            <li>Computer Vision</li>
+                            <li>Deep Learning</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>Traffic Sign Detection  </h3>
+                <p>An advanced computer vision system for real-time traffic sign detection and recognition using YOLO v11. This project aims to assist autonomous vehicles and ADAS systems in understanding road signs.</p>
+                <div class="project-links">
+                    <a href="https://github.com/AnirudhDambal/ADAS-YOLO11" target="_blank" class="project-link">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- CC_multiPods_setup Project -->
+        <div class="project-card">
+            <div class="project-image">
+                <img src="projects/images/devops.jpeg" alt="CC_multiPods_setup Project">
+                <div class="project-overlay">
+                    <div class="tech-stack">
+                        <h4>Tech Stack</h4>
+                        <ul>
+                            <li>Kubernetes</li>
+                            <li>Docker</li>
+                            <li>Flask</li>
+                            <li>PostgreSQL</li>
+                            <li>Ansible</li>
+                            <li>DevOps</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>Distributed Voting System</h3>
+                <p>A microservices-based distributed voting application deployed using Kubernetes. Features include real-time vote counting, persistent storage, and scalable architecture with multiple deployment options including Docker Compose, Kubernetes, and Ansible.</p>
+                <div class="project-links">
+                    <a href="https://github.com/AnirudhDambal/CC_multiPods_setup" target="_blank" class="project-link">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- HSL Project -->
+        <div class="project-card">
+            <div class="project-image">
+                <img src="projects/images/HSL.png" alt="HSL Project">
+                <div class="project-overlay">
+                    <div class="tech-stack">
+                        <h4>Tech Stack</h4>
+                        <ul>
+                            <li>C++</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>Hardware Simulation Language (HSL)</h3>
+                <p>A sophisticated hardware simulation project developed for NVIDIA, focusing on virtual simulation and analysis of bytecode execution in hardware environments. The project provides insights into bytecode behavior and performance when deployed on actual hardware systems.</p>
+                <div class="project-links">
+                    <span class="project-link confidential">
+                        <i class="fas fa-lock"></i> NDA Protected
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- LLM-JND Comparison Project -->
+        <div class="project-card">
+            <div class="project-image">
+                <img src="projects/images/llm_jnd.png" alt="LLM-JND Comparison Project">
+                <div class="project-overlay">
+                    <div class="tech-stack">
+                        <h4>Tech Stack</h4>
+                        <ul>
+                            <li>Python</li>
+                            <li>LLM</li>
+                            <li>Data Analysis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>LLM-JND Comparison</h3>
+                <p>A research project investigating whether Large Language Models (LLMs) can match human perception in detecting Just Noticeable Differences (JND) between images. The study compares LLM capabilities with human visual perception in distinguishing subtle image variations.</p>
+                <div class="project-links">
+                    <a href="https://github.com/bPavan16/LLM-JND-Comparison" target="_blank" class="project-link">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="project-modal" id="projectModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-body">
+                <!-- Project details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.projects-container {
+    padding: 2rem 0;
+}
+
+.projects-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+    font-size: 2.5rem;
+}
+
+.projects-filter {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.8rem 1.5rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--primary-color);
+    color: var(--text-light);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: var(--bg-darker);
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+    padding: 0 2rem;
+}
+
+@media (max-width: 1024px) {
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.project-card {
+    background-color: var(--card-bg);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    border: 1px solid rgba(118, 185, 0, 0.1);
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+}
+
+.project-image {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+}
+
+.project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: var(--bg-darker);
+    transition: transform 0.3s ease;
+}
+
+.project-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.project-card:hover .project-overlay {
+    opacity: 1;
+}
+
+.project-card:hover .project-image img {
+    transform: scale(1.1);
+}
+
+.tech-stack {
+    color: var(--text-light);
+    text-align: center;
+    padding: 1rem;
+}
+
+.tech-stack h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.tech-stack ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.tech-stack li {
+    background-color: var(--primary-color);
+    color: var(--bg-darker);
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
+
+.project-info {
+    padding: 1.5rem;
+}
+
+.project-info h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.project-links {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.project-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.project-link:hover {
+    color: var(--accent-blue);
+}
+
+.project-link i {
+    font-size: 1.2rem;
+}
+
+/* Modal Styles */
+.project-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--card-bg);
+    margin: 5% auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 1000px;
+    border-radius: 15px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close-modal {
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+    font-size: 2rem;
+    color: var(--text-gray);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: var(--primary-color);
+}
+
+.modal-body {
+    margin-top: 1rem;
+}
+
+.project-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.gallery-image {
+    width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.gallery-image:hover {
+    transform: scale(1.05);
+}
+
+.project-features {
+    margin: 1.5rem 0;
+}
+
+.project-features h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.features-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.features-list li {
+    background-color: var(--bg-darker);
+    padding: 0.8rem;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.features-list li i {
+    color: var(--primary-color);
+}
+
+.project-link.confidential {
+    color: var(--text-gray);
+    cursor: default;
+}
+
+.project-link.confidential i {
+    margin-right: 0.5rem;
+}
+</style>
+
+<script>
+// Sample project data - Replace with your actual projects
+const projects = [
+    {
+        id: 1,
+        title: "AI Image Generator",
+        description: "An AI-powered application that generates unique images based on text descriptions",
+        image: "projects/images/ai-generator.jpg",
+        category: "ai",
+        technologies: ["Python", "TensorFlow", "React"],
+        features: [
+            "Text-to-image generation",
+            "Custom style transfer",
+            "Batch processing"
+        ],
+        demoLink: "#",
+        githubLink: "#"
+    },
+    {
+        id: 2,
+        title: "E-commerce Platform",
+        description: "A full-stack e-commerce solution with real-time inventory management",
+        image: "projects/images/ecommerce.jpg",
+        category: "web",
+        technologies: ["React", "Node.js", "MongoDB"],
+        features: [
+            "Real-time inventory",
+            "Secure payments",
+            "Admin dashboard"
+        ],
+        demoLink: "#",
+        githubLink: "#"
+    }
+];
+
+// Function to render projects
+function renderProjects(category = 'all') {
+    const projectsGrid = document.querySelector('.projects-grid');
+    const filteredProjects = category === 'all' 
+        ? projects 
+        : projects.filter(project => project.category === category);
+
+    projectsGrid.innerHTML = filteredProjects.map(project => `
+        <div class="project-card" onclick="showProjectDetails(${project.id})">
+            <img src="${project.image}" alt="${project.title}" class="project-image">
+            <div class="project-info">
+                <h3 class="project-title">${project.title}</h3>
+                <p class="project-description">${project.description}</p>
+                <div class="project-tech">
+                    ${project.technologies.map(tech => `
+                        <span class="tech-tag">${tech}</span>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Function to show project details in modal
+function showProjectDetails(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    const modal = document.getElementById('projectModal');
+    const modalBody = modal.querySelector('.modal-body');
+
+    modalBody.innerHTML = `
+        <h2 class="project-title">${project.title}</h2>
+        <p class="project-description">${project.description}</p>
+        
+        <div class="project-gallery">
+            <img src="${project.image}" alt="${project.title}" class="gallery-image">
+        </div>
+
+        <div class="project-features">
+            <h3>Key Features</h3>
+            <ul class="features-list">
+                ${project.features.map(feature => `
+                    <li><i class="fas fa-check"></i>${feature}</li>
+                `).join('')}
+            </ul>
+        </div>
+
+        <div class="project-links">
+            <a href="${project.demoLink}" class="project-link" target="_blank">
+                <i class="fas fa-external-link-alt"></i> Live Demo
+            </a>
+            <a href="${project.githubLink}" class="project-link" target="_blank">
+                <i class="fab fa-github"></i> Source Code
+            </a>
+        </div>
+    `;
+
+    modal.style.display = 'block';
+}
+
+// Close modal when clicking the close button or outside the modal
+document.querySelector('.close-modal').onclick = function() {
+    document.getElementById('projectModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('projectModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Filter projects
+document.querySelectorAll('.filter-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Filter projects
+        renderProjects(button.dataset.category);
+    });
+});
+
+// Initial render
+renderProjects();
+</script> 

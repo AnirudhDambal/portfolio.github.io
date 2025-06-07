@@ -1,0 +1,73 @@
+<div class="home-container">
+    <div class="tech-background"></div>
+    <h1>Welcome to My Portfolio</h1>
+    <p class="intro">Crafting innovative solutions with cutting-edge technology</p>
+    <div class="tech-stack">
+        <i class="fab fa-react"></i>
+        <i class="fab fa-python"></i>
+        <i class="fab fa-node-js"></i>
+        <i class="fab fa-github"></i>
+    </div>
+    <div class="cta-buttons">
+        <a href="#" onclick="loadContent('projects.html')" class="cta-button">
+            <i class="fas fa-code"></i> View My Work
+        </a>
+        <a href="#" onclick="loadContent('contact.html')" class="cta-button">
+            <i class="fas fa-envelope"></i> Get in Touch
+        </a>
+    </div>
+</div>
+
+<style>
+.tech-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(45deg, rgba(118, 185, 0, 0.1), rgba(0, 163, 255, 0.1)),
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(118, 185, 0, 0.05) 10px,
+            rgba(118, 185, 0, 0.05) 20px
+        );
+    z-index: -1;
+}
+
+.tech-stack {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+.tech-stack i {
+    animation: float 3s ease-in-out infinite;
+}
+
+.tech-stack i:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.tech-stack i:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.tech-stack i:nth-child(4) {
+    animation-delay: 0.6s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+</style> 

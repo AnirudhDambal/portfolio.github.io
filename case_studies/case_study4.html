@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA Clara: Healthcare AI Task Scheduling</title>
+    <link rel="stylesheet" href="../styles/case-studies.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .case-study-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .performance-section {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            color: #e0e0e0;
+            font-family: 'Consolas', monospace;
+        }
+
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--card-bg);
+        }
+
+        .performance-table th,
+        .performance-table td {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .performance-table th {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .key-point {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            display: inline-block;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .simulate-button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-weight: 500;
+            margin: 1rem 0;
+        }
+
+        .simulate-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="case-study-container">
+        <h1>NVIDIA Clara: Healthcare AI Task Scheduling</h1>
+        
+        <section class="challenge-section">
+            <h2>Problem Statement</h2>
+            <div class="challenge-card">
+                <p>In healthcare AI, NVIDIA Clara (particularly Clara Deploy SDK and Holoscan) manages complex workflows for medical imaging, real-time patient monitoring, and federated learning. These workflows involve numerous tasks, such as preprocessing medical images, running AI inference for diagnostics, and post-processing results, often executed on distributed GPU systems or edge devices.</p>
+                
+                <h3>Key Challenges:</h3>
+                <ul>
+                    <li><strong>Urgency:</strong> Critical tasks, like analyzing CT scans for emergency patients, must be prioritized to ensure timely diagnostics.</li>
+                    <li><strong>Resource Constraints:</strong> Limited GPU memory, compute power, and network bandwidth require optimal allocation to avoid bottlenecks.</li>
+                    <li><strong>Real-Time Processing:</strong> Edge devices (e.g., NVIDIA IGX for medical sensors) demand low-latency task execution for real-time applications like ultrasound analysis.</li>
+                    <li><strong>Scalability:</strong> Hospitals or federated learning networks may generate thousands of tasks, requiring a scheduler that scales without compromising performance.</li>
+                </ul>
+                <p>Inefficient task scheduling can lead to delayed diagnostics, underutilized GPU resources, or missed real-time deadlines, impacting patient outcomes and system efficiency.</p>
+            </div>
+        </section>
+
+        <section class="solution-section">
+            <h2>Solution: Using Heaps and Priority Queues</h2>
+            <div class="solution-card">
+                <p>Heaps and priority queues address this problem by enabling efficient, priority-based task scheduling in Clara's pipelines. A priority queue, typically implemented as a max-heap, ensures that high-priority tasks (e.g., urgent patient diagnostics) are processed first, while optimizing resource allocation across GPUs and edge devices.</p>
+
+                <h3>How Heaps and Priority Queues Solve the Problem:</h3>
+                <ul>
+                    <li><strong>Prioritization of Critical Tasks:</strong>
+                        <ul>
+                            <li>Each task (e.g., CT scan analysis, patient monitoring alert) is assigned a priority score based on clinical urgency, deadline, or resource needs.</li>
+                            <li>A max-heap maintains tasks in order of priority, ensuring the highest-priority task is always at the top for immediate execution.</li>
+                            <li>Example: In a hospital, a task to analyze a stroke patient's brain scan is prioritized over routine imaging, reducing critical delays.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Efficient Resource Allocation:</strong>
+                        <ul>
+                            <li>Priority queues manage resource requests (e.g., GPU cores, memory) by prioritizing tasks with higher resource demands or stricter deadlines.</li>
+                            <li>This ensures optimal utilization of NVIDIA GPUs (e.g., DGX or Jetson), preventing resource starvation for critical tasks.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Real-Time Processing on Edge Devices:</strong>
+                        <ul>
+                            <li>In Clara Holoscan, priority queues schedule tasks from streaming sensor data (e.g., endoscopy video) to meet low-latency requirements.</li>
+                            <li>The heap ensures tasks with imminent deadlines are processed first, enabling real-time analytics.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Scalability for Large Workloads:</strong>
+                        <ul>
+                            <li>Heaps provide O(log N) time complexity for insertion and deletion, allowing Clara to handle thousands of tasks efficiently in large-scale settings like federated learning across hospitals.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="implementation-section">
+            <h2>NVIDIA Clara's Implementation</h2>
+            <div class="implementation-card">
+                <ul>
+                    <li><strong>Priority Queue Structure:</strong> Clara uses a max-heap-based priority queue to store tasks, where each task is an object with attributes like ID, priority (based on urgency or deadline), and resource requirements.</li>
+                    <li><strong>GPU Acceleration:</strong> NVIDIA's CUDA and RAPIDS libraries (e.g., cuCIM, cuGraph) parallelize heap operations, such as insertions and re-heapification, across GPU cores, ensuring scalability for large task sets.</li>
+                    <li><strong>Integration:</strong> Clara's management console visualizes task priorities, and the scheduler dequeues tasks from the priority queue for execution on GPUs or edge devices.</li>
+                </ul>
+
+                <h3>Algorithm: Priority Queue-Based Task Scheduling</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;vector&gt;
+
+// Task structure with ID and priority
+struct Task {
+    int id;      // Unique task identifier (e.g., CT scan job)
+    int priority; // Higher value = higher priority
+    
+    Task(int i, int p) : id(i), priority(p) {}
+    
+    // Comparison for max-heap
+    bool operator<(const Task& other) const {
+        return priority < other.priority;
+    }
+};
+
+// Task scheduler using priority queue
+class ClaraTaskScheduler {
+private:
+    std::priority_queue&lt;Task&gt; taskQueue;
+
+public:
+    // Add a task to the queue
+    void scheduleTask(int taskId, int priority) {
+        taskQueue.push(Task(taskId, priority));
+    }
+
+    // Process the highest-priority task
+    void processTask() {
+        if (!taskQueue.empty()) {
+            Task nextTask = taskQueue.top();
+            taskQueue.pop();
+            std::cout << "Processing task ID: " << nextTask.id
+                      << " with priority: " << nextTask.priority << std::endl;
+            // Execute task on GPU (e.g., run AI inference)
+            executeOnGPU(nextTask.id);
+        } else {
+            std::cout << "No tasks to process." << std::endl;
+        }
+    }
+
+private:
+    // Simulate GPU execution (e.g., run inference on DGX or Jetson)
+    void executeOnGPU(int taskId) {
+        // Placeholder for GPU task execution
+        std::cout << "Task " << taskId << " executed on NVIDIA GPU." << std::endl;
+    }
+};
+
+// Example usage
+int main() {
+    ClaraTaskScheduler scheduler;
+    
+    // Schedule tasks with different priorities
+    scheduler.scheduleTask(1, 10); // Urgent CT scan
+    scheduler.scheduleTask(2, 5);  // Routine imaging
+    scheduler.scheduleTask(3, 8);  // Patient monitoring alert
+
+    // Process tasks in priority order
+    for (int i = 0; i < 3; ++i) {
+        scheduler.processTask();
+    }
+    return 0;
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="metrics-section">
+            <h2>Performance Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Task Processing Time</h3>
+                    <ul>
+                        <li>Urgent Tasks: &lt; 100ms</li>
+                        <li>Routine Tasks: &lt; 500ms</li>
+                        <li>Batch Processing: &lt; 2s per batch</li>
+                    </ul>
+                </div>
+                <div class="metric-card">
+                    <h3>Resource Utilization</h3>
+                    <ul>
+                        <li>GPU Memory: 85% average</li>
+                        <li>Compute Utilization: 90% peak</li>
+                        <li>Network Bandwidth: 75% efficient</li>
+                    </ul>
+                </div>
+                <div class="metric-card">
+                    <h3>Scalability Metrics</h3>
+                    <ul>
+                        <li>Tasks per Second: 1000+</li>
+                        <li>Concurrent Users: 100+</li>
+                        <li>System Latency: &lt; 50ms</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="analysis-section">
+            <h2>Performance Analysis</h2>
+            <div class="analysis-card">
+                <h3>Time Complexity</h3>
+                <ul>
+                    <li><strong>Task Scheduling:</strong> O(log N)
+                        <ul>
+                            <li>N = number of tasks in queue</li>
+                            <li>Heap-based priority queue operations</li>
+                            <li>Parallel task insertion and removal</li>
+                        </ul>
+                    </li>
+                    <li><strong>Task Processing:</strong> O(1) per task
+                        <ul>
+                            <li>Constant time for task execution</li>
+                            <li>GPU-accelerated inference</li>
+                            <li>Parallel processing of independent tasks</li>
+                        </ul>
+                    </li>
+                    <li><strong>Resource Management:</strong> O(log N)
+                        <ul>
+                            <li>Dynamic resource allocation</li>
+                            <li>Priority-based scheduling</li>
+                            <li>Load balancing across GPUs</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>Space Complexity</h3>
+                <ul>
+                    <li><strong>Task Queue:</strong> O(N)
+                        <ul>
+                            <li>N = maximum number of tasks</li>
+                            <li>Heap-based priority queue storage</li>
+                            <li>Task metadata and parameters</li>
+                        </ul>
+                    </li>
+                    <li><strong>Resource Tracking:</strong> O(M)
+                        <ul>
+                            <li>M = number of available resources</li>
+                            <li>GPU memory allocation tracking</li>
+                            <li>Compute resource management</li>
+                        </ul>
+                    </li>
+                    <li><strong>Task State:</strong> O(N)
+                        <ul>
+                            <li>Task execution status</li>
+                            <li>Intermediate results storage</li>
+                            <li>Dependency tracking</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="applications-section">
+            <h2>Key Applications</h2>
+            <div class="applications-grid">
+                <div class="application-card">
+                    <h3>Medical Imaging</h3>
+                    <ul>
+                        <li>CT Scan Analysis</li>
+                        <li>MRI Processing</li>
+                        <li>X-ray Interpretation</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Real-Time Monitoring</h3>
+                    <ul>
+                        <li>Patient Vital Signs</li>
+                        <li>ICU Monitoring</li>
+                        <li>Emergency Response</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Federated Learning</h3>
+                    <ul>
+                        <li>Multi-Hospital Training</li>
+                        <li>Privacy-Preserving AI</li>
+                        <li>Distributed Diagnostics</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Initialize the performance chart
+        const ctx = document.getElementById('taskProcessingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Urgent Tasks', 'Routine Tasks', 'Batch Processing'],
+                datasets: [{
+                    label: 'Processing Time (ms)',
+                    data: [100, 500, 2000],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Time (ms)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA Isaac Sim: Collision Detection</title>
+    <link rel="stylesheet" href="../styles/case-studies.css">
+</head>
+<body>
+    <div class="case-study-container">
+        <h1>NVIDIA Isaac Sim: Collision Detection</h1>
+        
+        <section class="challenge-section">
+            <h2>Problem Statement</h2>
+            <div class="challenge-card">
+                <p>NVIDIA Isaac Sim enables real-time robot simulation, requiring efficient collision detection and environment modeling. The challenge is optimizing collision queries and spatial organization for real-time robotics simulation on NVIDIA GPUs (e.g., Jetson, RTX), while maintaining accuracy and performance.</p>
+            </div>
+        </section>
+
+        <section class="solution-section">
+            <h2>Why Union-Find and Other Data Structures</h2>
+            <div class="solution-card">
+                <ul>
+                    <li><strong>Union-Find (Disjoint Sets):</strong>
+                        <ul>
+                            <li>Tracks disjoint sets of colliding objects</li>
+                            <li>Enables fast merging and querying (O(α(n)))</li>
+                            <li>Ideal for real-time robotics</li>
+                        </ul>
+                    </li>
+                    <li><strong>Other Data Structures:</strong>
+                        <ul>
+                            <li>AABB Trees: Hierarchical axis-aligned bounding boxes for broad-phase collision detection</li>
+                            <li>Octrees: Spatial partitioning for environment modeling</li>
+                            <li>Hash Maps: Store object-to-set mappings for fast lookups</li>
+                        </ul>
+                    </li>
+                    <li><strong>Isaac Context:</strong>
+                        <ul>
+                            <li>Union-Find groups colliding objects detected by PhysX</li>
+                            <li>AABB trees and octrees optimize collision and spatial queries</li>
+                            <li>GPU parallelism ensures real-time performance</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="implementation-section">
+            <h2>Implementation</h2>
+            <div class="implementation-card">
+                <h3>How They Work</h3>
+                <ul>
+                    <li><strong>Union-Find:</strong>
+                        <ul>
+                            <li>Manages sets via Find (get root) and Union (merge sets)</li>
+                            <li>Uses path compression and rank heuristics</li>
+                            <li>Optimizes collision grouping</li>
+                        </ul>
+                    </li>
+                    <li><strong>AABB Trees:</strong>
+                        <ul>
+                            <li>Hierarchically partition objects' bounding boxes</li>
+                            <li>Prune non-colliding pairs in broad-phase checks</li>
+                            <li>Accelerate collision detection</li>
+                        </ul>
+                    </li>
+                    <li><strong>Octrees:</strong>
+                        <ul>
+                            <li>Divide 3D space into octants</li>
+                            <li>Enable fast spatial queries</li>
+                            <li>Support navigation and obstacle detection</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>Union-Find with Hash Map Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct DisjointSet { 
+    int parent; 
+    int rank; 
+};
+
+struct HashMap { 
+    int* keys; 
+    int* values; 
+    int size; 
+}; // Maps object to set
+
+__device__ int find(int x, DisjointSet* sets, HashMap* map) {
+    int idx = /* Hash(x) % map->size */;
+    if (map->keys[idx] != x) return x; // Not in set
+    
+    if (sets[x].parent != x)
+        sets[x].parent = find(sets[x].parent, sets, map);
+    return sets[x].parent;
+}
+
+__global__ void unionSets(
+    DisjointSet* sets, 
+    HashMap* map, 
+    int* collisions, 
+    int nCollisions
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= nCollisions) return;
+
+    int x = collisions[idx * 2];
+    int y = collisions[idx * 2 + 1];
+    
+    int rootX = find(x, sets, map);
+    int rootY = find(y, sets, map);
+    
+    if (rootX != rootY) {
+        if (sets[rootX].rank < sets[rootY].rank) 
+            sets[rootX].parent = rootY;
+        else if (sets[rootX].rank > sets[rootY].rank) 
+            sets[rootY].parent = rootX;
+        else { 
+            sets[rootY].parent = rootX; 
+            sets[rootX].rank++; 
+        }
+        
+        // Update hash map
+        map->keys[/* Hash(x) */] = x; 
+        map->values[/* Hash(x) */] = rootX;
+        map->keys[/* Hash(y) */] = y; 
+        map->values[/* Hash(y) */] = rootX;
+    }
+}
+
+__global__ void initDisjointSet(DisjointSet* sets, HashMap* map, int n) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n) return;
+    
+    sets[idx].parent = idx;
+    sets[idx].rank = 0;
+    map->keys[idx] = idx;
+    map->values[idx] = idx;
+}</pre>
+                </div>
+
+                <h3>AABB Tree Collision Detection Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct AABB { 
+    float3 min; 
+    float3 max; 
+};
+
+struct AABBNode { 
+    AABB bounds; 
+    int left; 
+    int right; 
+    int objectId; 
+};
+
+__global__ void buildAABBTree(AABB* objects, AABBNode* nodes, int n) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n) return;
+    
+    // Recursive split using SAH or median
+    nodes[idx].bounds = objects[idx];
+    if (/* Leaf condition */) 
+        nodes[idx].objectId = idx;
+    else {
+        nodes[idx].left = /* Split left */;
+        nodes[idx].right = /* Split right */;
+    }
+}
+
+__global__ void detectCollisions(
+    AABBNode* tree, 
+    int n, 
+    int* collisions, 
+    int* collisionCount
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n) return;
+    
+    // Traverse tree for AABB overlaps
+    if (/* AABB overlap */) {
+        int pos = atomicAdd(collisionCount, 1);
+        collisions[pos * 2] = tree[idx].objectId;
+        collisions[pos * 2 + 1] = /* Other object */;
+    }
+}</pre>
+                </div>
+
+                <h3>Octree for Environment Modeling Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct OctreeNode { 
+    AABB bounds; 
+    int children[8]; 
+    int* objects; 
+    int objCount; 
+};
+
+__global__ void buildOctree(AABB* objects, OctreeNode* nodes, int n) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n) return;
+    
+    // Subdivide space into 8 octants
+    if (/* Leaf condition */) 
+        nodes[idx].objects = /* Object list */;
+    else {
+        for (int i = 0; i < 8; i++)
+            nodes[idx].children[i] = /* Allocate child */;
+    }
+}
+
+__global__ void queryOctree(
+    OctreeNode* nodes, 
+    float3 query, 
+    int* results, 
+    int* resultCount
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= 1) return; // Single thread for simplicity
+    
+    // Traverse octree to find objects near query point
+    if (/* Query in bounds */) {
+        int pos = atomicAdd(resultCount, 1);
+        results[pos] = /* Object ID */;
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="analysis-section">
+            <h2>Performance Analysis</h2>
+            <div class="analysis-card">
+                <h3>Time and Space Complexity</h3>
+                <ul>
+                    <li><strong>Union-Find:</strong>
+                        <ul>
+                            <li>Time Complexity: O(α(n)) amortized</li>
+                            <li>Space Complexity: O(n)</li>
+                            <li>Ideal for dynamic collision grouping</li>
+                        </ul>
+                    </li>
+                    <li><strong>AABB Tree:</strong>
+                        <ul>
+                            <li>Time Complexity: O(log n) query</li>
+                            <li>Space Complexity: O(n)</li>
+                            <li>Efficient for broad-phase collision detection</li>
+                        </ul>
+                    </li>
+                    <li><strong>Octree:</strong>
+                        <ul>
+                            <li>Time Complexity: O(log n) query</li>
+                            <li>Space Complexity: O(n)</li>
+                            <li>Optimal for spatial queries</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="applications-section">
+            <h2>Key Applications</h2>
+            <div class="applications-grid">
+                <div class="application-card">
+                    <h3>Robot Simulation</h3>
+                    <ul>
+                        <li>Collision Detection</li>
+                        <li>Path Planning</li>
+                        <li>Environment Modeling</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Real-time Processing</h3>
+                    <ul>
+                        <li>Dynamic Updates</li>
+                        <li>Parallel Computation</li>
+                        <li>GPU Acceleration</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Robotics Development</h3>
+                    <ul>
+                        <li>Testing & Validation</li>
+                        <li>Algorithm Development</li>
+                        <li>Performance Optimization</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA Ray Tracing: KD-Tree Optimization</title>
+    <link rel="stylesheet" href="../styles/case-studies.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="case-study-container">
+        <h1>NVIDIA Ray Tracing: KD-Tree Optimization</h1>
+        
+        <section class="challenge-section">
+            <h2>Problem Statement</h2>
+            <div class="challenge-card">
+                <p>Ray tracing involves tracing rays from a camera through pixels to compute intersections with scene objects (e.g., triangles), producing photorealistic images. The challenge is the O(M·N) complexity for M rays and N objects, which is computationally expensive. The goal is to accelerate ray-object intersections to O(M log N) using KD-trees on NVIDIA GPUs, leveraging parallelism for real-time performance.</p>
+            </div>
+        </section>
+
+        <section class="solution-section">
+            <h2>Why KD-Trees</h2>
+            <div class="solution-card">
+                <ul>
+                    <li><strong>O(log N) Complexity:</strong> Hierarchically partition space, reducing intersection tests from O(N) to O(log N) per ray.</li>
+                    <li><strong>GPU-Friendly:</strong> Support parallel construction and traversal, optimized for CUDA's SIMD architecture.</li>
+                    <li><strong>Efficient for Complex Scenes:</strong> Adapt to non-uniform geometry and occlusion via Surface Area Heuristic (SAH).</li>
+                    <li><strong>Dynamic Scenes:</strong> Enable fast rebuilding/refitting for real-time applications.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="implementation-section">
+            <h2>KD-Tree on NVIDIA GPUs</h2>
+            <div class="implementation-card">
+                <p>KD-trees organize a 3D scene into a binary tree of axis-aligned bounding boxes, enabling:</p>
+                <ul>
+                    <li><strong>Construction:</strong> Parallel SAH-based splitting across CUDA threads.</li>
+                    <li><strong>Traversal:</strong> Stackless traversal for rays, with each ray processed by a CUDA thread, grouped into warps (32 threads) for SIMD efficiency.</li>
+                    <li><strong>Parallelism:</strong> Millions of rays processed concurrently, with packet traversal reducing branch divergence.</li>
+                    <li><strong>Hardware Acceleration:</strong> NVIDIA RTX GPUs enhance performance via ray tracing cores (though KD-trees require adaptation).</li>
+                </ul>
+
+                <h3>Implementation</h3>
+                <div class="code-block">
+                    <pre>
+#include &lt;cuda_runtime.h&gt;
+
+struct AABB { 
+    float3 min, max; 
+};
+
+struct Node { 
+    AABB bounds; 
+    int splitAxis; 
+    float splitPos; 
+    int left, right, primStart, primCount; 
+};
+
+struct Primitive { 
+    float3 vertices[3]; 
+};
+
+__device__ float computeSAH(AABB left, AABB right, int nLeft, int nRight, float parentSA) {
+    float saLeft = /* Surface area of left AABB */;
+    float saRight = /* Surface area of right AABB */;
+    return 0.1f + (saLeft / parentSA) * nLeft + (saRight / parentSA) * nRight;
+}
+
+__global__ void buildKDTree(Primitive* primitives, int nPrims, Node* nodes, int* nodeCount) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= nPrims) return;
+
+    // Step 1: Compute scene bounds
+    AABB sceneBounds = /* Compute from all primitives */;
+    if (idx == 0) {
+        nodes[0].bounds = sceneBounds;
+        nodes[0].primStart = 0;
+        nodes[0].primCount = nPrims;
+    }
+    __syncthreads();
+
+    // Step 2: Parallel node splitting
+    for (int depth = 0; depth < MAX_DEPTH; depth++) {
+        int nodeIdx = /* BFS node assignment */;
+        if (nodeIdx >= *nodeCount) break;
+
+        Node& node = nodes[nodeIdx];
+        if (node.primCount <= MIN_PRIMS) continue;
+
+        // Evaluate SAH for splits along x, y, z
+        float bestCost = FLT_MAX;
+        int bestAxis = 0;
+        float bestPos = 0.0f;
+
+        for (int axis = 0; axis < 3; axis++) {
+            for (float pos : /* Candidate split positions */) {
+                AABB left, right;
+                int nLeft, nRight;
+                // Partition primitives
+                /* Compute left/right AABBs and counts */
+                float cost = computeSAH(left, right, nLeft, nRight, node.bounds.sa);
+                if (cost < bestCost) {
+                    bestCost = cost;
+                    bestAxis = axis;
+                    bestPos = pos;
+                }
+            }
+        }
+
+        // Split node
+        if (bestCost < node.primCount) {
+            node.splitAxis = bestAxis;
+            node.splitPos = bestPos;
+            node.left = atomicAdd(nodeCount, 1);
+            node.right = atomicAdd(nodeCount, 1);
+            // Assign primitives to left/right
+        }
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        
+
+        <section class="analysis-section">
+            <h2>Performance Analysis</h2>
+            <div class="analysis-card">
+                <ul>
+                    <li><strong>Time Complexity:</strong> O(log N)
+                        <ul>
+                            <li>M = number of rays</li>
+                            <li>N = number of scene primitives</li>
+                            <li>Log N = KD-tree traversal cost per ray</li>
+                            <li>Significant improvement over O(M·N) brute force</li>
+                        </ul>
+                    </li>
+                    <li><strong>Space Complexity:</strong> O(N)
+                        <ul>
+                            <li>N = number of scene primitives</li>
+                            <li>Linear storage for KD-tree structure</li>
+                            <li>Constant memory per ray during traversal</li>
+                            <li>Efficient memory usage for large scenes</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="applications-section">
+            <h2>Key Applications</h2>
+            <div class="applications-grid">
+                <div class="application-card">
+                    <h3>Real-Time Rendering</h3>
+                    <ul>
+                        <li>Game Graphics</li>
+                        <li>Virtual Reality</li>
+                        <li>Architectural Visualization</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Scientific Visualization</h3>
+                    <ul>
+                        <li>Medical Imaging</li>
+                        <li>Molecular Modeling</li>
+                        <li>Fluid Dynamics</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Film Production</h3>
+                    <ul>
+                        <li>Pre-visualization</li>
+                        <li>Final Rendering</li>
+                        <li>Special Effects</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Initialize the performance chart
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Construction Time', 'Traversal Rate', 'Frame Rate'],
+                datasets: [{
+                    label: 'Performance Metrics',
+                    data: [0.26, 27, 12],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

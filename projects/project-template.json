@@ -1,0 +1,22 @@
+{
+    "id": "project-id",
+    "title": "Project Title",
+    "description": "Brief description of the project",
+    "longDescription": "Detailed description of the project, its features, and technologies used",
+    "technologies": ["Technology 1", "Technology 2", "Technology 3"],
+    "images": [
+        {
+            "path": "projects/images/project-id/main.png",
+            "alt": "Main project screenshot"
+        }
+    ],
+    "demoLink": "https://demo-link.com",
+    "githubLink": "https://github.com/username/project",
+    "features": [
+        "Feature 1",
+        "Feature 2",
+        "Feature 3"
+    ],
+    "category": "Web Development",
+    "date": "2024-03-20"
+} 

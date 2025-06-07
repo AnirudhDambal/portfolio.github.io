@@ -1,0 +1,218 @@
+/* Case Studies Styling */
+:root {
+    --bg-color: #0a0a0a;
+    --card-bg: #1a1a1a;
+    --text-color: #ffffff;
+    --accent-color: #76b900;
+    --border-color: #333333;
+    --hover-color: #2a2a2a;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+.case-study-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Section Styling */
+.challenge-section,
+.solution-section,
+.implementation-section,
+.analysis-section,
+.applications-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Styling */
+.challenge-card,
+.solution-card,
+.implementation-card,
+.analysis-card {
+    background: var(--hover-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+/* Headings */
+h1 {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+h2 {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin: 1.5rem 0 1rem;
+}
+
+/* Lists */
+ul {
+    list-style-type: none;
+    padding-left: 1.5rem;
+}
+
+ul li {
+    margin-bottom: 0.8rem;
+    position: relative;
+}
+
+ul li::before {
+    content: "•";
+    color: var(--accent-color);
+    font-weight: bold;
+    position: absolute;
+    left: -1.2rem;
+}
+
+ul ul {
+    margin-top: 0.5rem;
+}
+
+ul ul li::before {
+    content: "◦";
+}
+
+/* Code Blocks */
+.code-example {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.code-example pre {
+    background: #1e1e1e;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin: 0;
+    overflow-x: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-example code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: #e0e0e0;
+}
+
+.code-example h3 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    font-size: 1.2em;
+}
+
+/* Syntax highlighting colors */
+.code-example .keyword { color: #569cd6; }
+.code-example .string { color: #ce9178; }
+.code-example .comment { color: #6a9955; }
+.code-example .function { color: #dcdcaa; }
+.code-example .type { color: #4ec9b0; }
+.code-example .number { color: #b5cea8; }
+.code-example .operator { color: #d4d4d4; }
+
+/* Strong Text */
+strong {
+    color: var(--accent-color);
+}
+
+/* Links */
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #8ed900;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .case-study-container {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    .challenge-section,
+    .solution-section,
+    .implementation-section,
+    .analysis-section,
+    .applications-section {
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.challenge-section,
+.solution-section,
+.implementation-section,
+.analysis-section,
+.applications-section {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #8ed900;
+} 
+} 
