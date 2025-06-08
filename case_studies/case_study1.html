@@ -178,6 +178,19 @@ __global__ void buildKDTree(Primitive* primitives, int nPrims, Node* nodes, int*
             </div>
         </section>
     </div>
+    <section class="references-section">
+        <h2>References</h2>
+        <div class="references-card">
+            <ol>
+                <li><a href="https://on-demand.gputechconf.com/gtc/2019/presentation/s9265-ray-tracing-on-the-nvidia-turing-gpu.pdf" target="_blank">Ray Tracing on the NVIDIA Turing GPU</a></li>
+                <li><a href="https://www.cs.cornell.edu/courses/cs4620/2010fa/lectures/14ray-kdtree.pdf" target="_blank">Cornell CS: Ray Tracing and KD-Trees</a></li>
+                <li><a href="https://developer.nvidia.com/optix" target="_blank">NVIDIA OptiX Ray Tracing Engine</a></li>
+                <li><a href="https://developer.nvidia.com/rtx/ray-tracing" target="_blank">NVIDIA RTX Ray Tracing Documentation</a></li>
+                <li><a href="https://arxiv.org/abs/1807.00264" target="_blank">Real-Time Ray Tracing with NVIDIA RTX</a></li>
+            </ol>
+        </div>
+    </section>
+    
 
     <script>
         // Initialize the performance chart
@@ -216,5 +229,31 @@ __global__ void buildKDTree(Primitive* primitives, int nPrims, Node* nodes, int*
             }
         });
     </script>
+
+    <style>
+        .references-section {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .references-card ol {
+            padding-left: 1.5rem;
+        }
+
+        .references-card li {
+            margin-bottom: 0.5rem;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .references-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .references-card a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </body>
 </html> 

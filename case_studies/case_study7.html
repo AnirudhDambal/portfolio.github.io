@@ -3,142 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NVIDIA RAPIDS: Sorting Algorithms - Case Study</title>
+    <title>NVIDIA RAPIDS: Sorting Algorithms</title>
     <link rel="stylesheet" href="../styles/case-studies.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="case-study-container">
         <h1>NVIDIA RAPIDS: Sorting Algorithms</h1>
         
-        <section class="challenge">
+        <section class="challenge-section">
             <h2>Problem Statement</h2>
-            <p>NVIDIA RAPIDS accelerates data science workflows (ETL, machine learning, querying) on GPUs, leveraging CUDA for high-performance computing. For large-scale datasets (e.g., terabytes in data lakes), efficient sorting is critical for tasks like data preprocessing, indexing, and querying. Radix Sort and QuickSort are key algorithms, optimized for GPU parallelism to handle massive datasets in RAPIDS cuDF and cuML libraries.</p>
-        </section>
-
-        <section class="solution">
-            <h2>Why Radix Sort and QuickSort in RAPIDS</h2>
-            <ul>
-                <li><strong>Radix Sort:</strong> Non-comparative, linear-time sorting (O(nk)) for integers/strings, ideal for large datasets with fixed-size keys (e.g., database indices). GPU-friendly due to predictable memory access and parallelism.</li>
-                <li><strong>QuickSort:</strong> Comparison-based, O(n log n) average complexity, effective for general-purpose sorting but sensitive to worst-case O(n²) scenarios. GPU implementations (e.g., GPU-QuickSort) exploit parallelism for large arrays.</li>
-                <li><strong>RAPIDS Context:</strong> RAPIDS cuDF (pandas-like) and cuML (scikit-learn-like) use GPU-accelerated sorting for ETL, analytics, and ML tasks, achieving 10–50x speedups over CPU-based solutions on NVIDIA GPUs (e.g., A100, DGX).</li>
-            </ul>
-
-            <h3>Other Algorithms/Data Structures</h3>
-            <ul>
-                <li><strong>Bitonic Sort:</strong> Sorting network for GPU, O(n log² n), predictable for parallel execution.</li>
-                <li><strong>Merge Sort:</strong> Stable, O(n log n), used in RAPIDS for specific cases (e.g., cuDF joins).</li>
-                <li><strong>Priority Queue:</strong> Supports QuickSort pivot selection and Radix Sort bucket management.</li>
-                <li><strong>Hash Maps:</strong> Store intermediate mappings for sorting keys or query results.</li>
-                <li><strong>Apache Arrow:</strong> In-memory columnar format for efficient data loading and sorting in cuDF.</li>
-            </ul>
-        </section>
-
-        <section class="implementation">
-            <h2>How They Work</h2>
-            <div class="implementation-details">
-                <h3>Radix Sort</h3>
-                <ul>
-                    <li><strong>Process:</strong> Sorts digit-by-digit (LSD/MSD), distributing elements into buckets using counting sort per digit.</li>
-                    <li><strong>GPU:</strong> CUDA threads parallelize bucket distribution and prefix sums, leveraging high memory bandwidth (e.g., A100: 200 million edges).</li>
-                </ul>
-
-                <h3>QuickSort</h3>
-                <ul>
-                    <li><strong>Process:</strong> Partitions data around pivots, recursively sorting subarrays. GPU-QuickSort uses multiple pivots for better load balancing.</li>
-                    <li><strong>GPU:</strong> CUDA threads handle partitioning and recursion, with optimizations like warp intrinsics.</li>
-                </ul>
-
-                <h3>RAPIDS Integration</h3>
-                <p>cuDF uses Radix Sort for columnar data sorting (e.g., SQL ORDER BY), QuickSort for smaller or complex data types.</p>
-            </div>
-
-            <div class="code-example">
-                <h3>Radix Sort (CUDA Pseudo-Code)</h3>
-                <pre><code class="language-cuda">#include &lt;cuda_runtime.h&gt;
-
-__global__ void radixSort(int* data, int n, int exp, int* output) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= n) return;
-    
-    int digit = (data[idx] >> exp) & 0xF; // Extract 4-bit digit
-    int* bucket = /* Global bucket array */;
-    int pos = atomicAdd(&bucket[digit], 1);
-    output[pos] = data[idx];
-}
-
-__global__ void prefixSum(int* buckets, int nBuckets, int* prefix) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= nBuckets) return;
-    
-    prefix[idx] = buckets[idx];
-    for (int i = 1; i < nBuckets; i *= 2) {
-        int temp = prefix[idx - i];
-        __syncthreads();
-        if (idx >= i) prefix[idx] += temp;
-        __syncthreads();
-    }
-}</code></pre>
-
-                <h3>QuickSort (CUDA Pseudo-Code)</h3>
-                <pre><code class="language-cuda">#include &lt;cuda_runtime.h&gt;
-
-__global__ void quickSort(int* data, int left, int right, int* pivots) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (left >= right) return;
-    
-    int pivot = pivots[left + (right - left) / 2];
-    int i = left, j = right;
-    
-    while (i <= j) {
-        while (data[i] < pivot) i++;
-        while (data[j] > pivot) j--;
-        if (i <= j) {
-            int temp = data[i];
-            data[i] = data[j];
-            data[j] = temp;
-            i++; j--;
-        }
-    }
-    
-    if (idx == 0) {
-        // Recursively launch kernels for subarrays
-        quickSort&lt;&lt;&lt;1, 1&gt;&gt;&gt;(data, left, j);
-        quickSort&lt;&lt;&lt;1, 1&gt;&gt;&gt;(data, i, right);
-    }
-}</code></pre>
+            <div class="challenge-card">
+                <p>Data processing and machine learning workflows often require efficient sorting of large datasets. The challenge is to implement high-performance sorting algorithms on NVIDIA GPUs that can handle massive datasets while maintaining good scalability and memory efficiency.</p>
             </div>
         </section>
 
-        <section class="analysis">
+        <section class="solution-section">
+            <h2>Solution Approach</h2>
+            <div class="solution-card">
+                <ul>
+                    <li><strong>Radix Sort:</strong> Leverages GPU parallelism for stable, linear-time sorting of fixed-width keys.</li>
+                    <li><strong>QuickSort:</strong> Hybrid approach combining CPU and GPU for optimal performance.</li>
+                    <li><strong>Memory Management:</strong> Efficient use of GPU memory hierarchy and coalesced memory access.</li>
+                    <li><strong>Scalability:</strong> Designed to handle datasets larger than GPU memory through streaming.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="implementation-section">
+            <h2>Implementation Details</h2>
+            <div class="implementation-card">
+                <h3>Key Components</h3>
+                <ul>
+                    <li><strong>Radix Sort Implementation:</strong>
+                        <ul>
+                            <li>Parallel histogram computation</li>
+                            <li>Efficient prefix sum calculation</li>
+                            <li>Optimized memory access patterns</li>
+                        </ul>
+                    </li>
+                    <li><strong>QuickSort Hybrid:</strong>
+                        <ul>
+                            <li>GPU-based partitioning</li>
+                            <li>CPU-GPU workload balancing</li>
+                            <li>Adaptive threshold selection</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="analysis-section">
             <h2>Performance Analysis</h2>
-            <div class="complexity-analysis">
-                <h3>Time Complexity</h3>
+            <div class="analysis-card">
                 <ul>
-                    <li>Radix Sort: O(nk) where k is the number of digits</li>
-                    <li>QuickSort: O(n log n) average case, O(n²) worst case</li>
-                    <li>Priority Queue: O(log n) for insert operations</li>
-                    <li>Hash Map: O(1) for lookups</li>
-                </ul>
-
-                <h3>Space Complexity</h3>
-                <ul>
-                    <li>Radix Sort: O(n + b) where b is the base</li>
-                    <li>QuickSort: O(log n) for recursion stack</li>
-                    <li>Priority Queue: O(n)</li>
-                    <li>Hash Map: O(n)</li>
-                    <li>Apache Arrow: O(n) for in-memory storage</li>
+                    <li><strong>Speedup:</strong> 10-50x over CPU implementations</li>
+                    <li><strong>Memory Efficiency:</strong> Optimized memory bandwidth utilization</li>
+                    <li><strong>Scalability:</strong> Linear scaling with dataset size</li>
+                    <li><strong>Energy Efficiency:</strong> Improved performance per watt</li>
                 </ul>
             </div>
         </section>
 
-        <section class="applications">
-            <h2>Key Applications</h2>
-            <ul>
-                <li><strong>Data Preprocessing:</strong> Efficient sorting of large datasets for ETL pipelines in RAPIDS cuDF.</li>
-                <li><strong>Machine Learning:</strong> Accelerated data preparation and feature engineering in cuML.</li>
-                <li><strong>Database Operations:</strong> High-performance sorting for SQL-like operations in GPU-accelerated databases.</li>
-            </ul>
+        <section class="applications-section">
+            <h2>Applications</h2>
+            <div class="applications-grid">
+                <div class="application-card">
+                    <h3>Data Processing</h3>
+                    <ul>
+                        <li>Database Operations</li>
+                        <li>ETL Pipelines</li>
+                        <li>Data Analytics</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Machine Learning</h3>
+                    <ul>
+                        <li>Feature Engineering</li>
+                        <li>Data Preprocessing</li>
+                        <li>Model Training</li>
+                    </ul>
+                </div>
+                <div class="application-card">
+                    <h3>Scientific Computing</h3>
+                    <ul>
+                        <li>Numerical Analysis</li>
+                        <li>Simulation Data</li>
+                        <li>Research Computing</li>
+                    </ul>
+                </div>
+            </div>
         </section>
     </div>
+
+    <section class="references-section">
+        <h2>References</h2>
+        <div class="references-card">
+            <ol>
+                <li><a href="https://developer.nvidia.com/rapids" target="_blank">NVIDIA RAPIDS Documentation</a></li>
+                <li><a href="https://arxiv.org/abs/1908.11314" target="_blank">GPU-Accelerated Data Processing with RAPIDS</a></li>
+            </ol>
+        </div>
+    </section>
+
+    <style>
+        .references-section {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .references-card ol {
+            padding-left: 1.5rem;
+        }
+
+        .references-card li {
+            margin-bottom: 0.5rem;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .references-card a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .references-card a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </body>
 </html> 
